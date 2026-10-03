@@ -1,0 +1,63 @@
+# meaning-evals configuration.
+#
+# Model names are configuration, never code.
+#
+# No judge sets a temperature. Current Claude models reject sampling parameters with a 400
+# error, and GPT-6 is steered by reasoning effort, so every model runs at its provider's
+# default sampling. Claude and GPT run at a fixed reasoning effort; Gemini, which takes a
+# thinking level instead, runs at its default.
+
+[generator]
+provider = "google"
+model = "gemini-3.8-flash"
+max_output_tokens = 16000
+
+[[judges]]
+name = "claude"
+provider = "anthropic"
+model = "claude-sonnet-5"
+effort = "high"
+max_output_tokens = 16000
+
+[[judges]]
+name = "gpt"
+provider = "openai"
+model = "gpt-6-sol"
+effort = "high"
+max_output_tokens = 16000
+
+# OpenAI's top tier beside gpt-6-sol, to show whether a stronger model of one family judges
+# better.
+[[judges]]
+name = "gpt-astra"
+provider = "openai"
+model = "gpt-6-astra"
+effort = "high"
+max_output_tokens = 16000
+
+[[judges]]
+name = "gemini"
+provider = "google"
+model = "gemini-3.8-flash"
+max_output_tokens = 16000
+
+[requests]
+timeout_seconds = 120
+# Total attempts per call, the first included. Each SDK backs off exponentially between them.
+max_attempts = 4
+
+[judging]
+runs = 2
+
+[worksheet]
+seed = 20260925
+
+[scoring]
+bootstrap_resamples = 10000
+seed = 20260925
+
+[paths]
+data_dir = "data"
+prompts_dir = "prompts"
+results_dir = "results"
+labels_dir = "labels"

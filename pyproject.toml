@@ -1,0 +1,50 @@
+[project]
+name = "meaning-evals"
+version = "1.0.0"
+description = "Measures whether a model can tell a meaning-level divergence from a faithful paraphrase of official guidance."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "William Short", email = "wmshort@semiosphere.co.uk" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic==1.8.0",
+    "google-genai==2.25.0",
+    "openai==3.19.2",
+    "pydantic==2.13.5",
+]
+
+[project.scripts]
+meaning-evals = "meaning_evals.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.11.17,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "mypy==2.3.1",
+    "pytest==9.1.1",
+    "ruff==0.16.9",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "N", "SIM", "S", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests assert, and use seeded pseudo-random generators for reproducible fixtures.
+"tests/**" = ["S101", "S311"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

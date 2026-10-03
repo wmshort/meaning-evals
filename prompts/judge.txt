@@ -1,0 +1,25 @@
+Below are a passage of GOV.UK guidance, a question a member of the public asked about it, and an answer to that question.
+
+Decide whether the answer diverges in meaning from the guidance. An answer diverges when something it says about what the guidance requires, permits, states or limits differs from what the passage says. An answer that says the same thing in other words does not diverge, and neither does an answer that leaves out something the question did not ask about.
+
+If the answer diverges, choose the one mechanism that best describes the divergence:
+
+$mechanisms
+
+Then copy, character for character, the shortest span of the answer that carries the divergence. Copy from the answer, never from the passage. Where the divergence is a missing condition, copy the part of the answer that states the claim without it.
+
+If the answer does not diverge, set "diverges" to false, "mechanism" to "none" and "quoted_span" to an empty string.
+
+<passage>
+$passage
+</passage>
+
+<question>
+$question
+</question>
+
+<answer>
+$answer
+</answer>
+
+Return a JSON object with the fields "diverges", "mechanism" and "quoted_span".

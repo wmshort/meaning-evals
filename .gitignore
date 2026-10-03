@@ -1,0 +1,18 @@
+# Keys live in the environment only. A local .env is never committed.
+.env
+.env.*
+!.env.example
+
+# Python, uv and tool caches
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+
+# data/runs/ is kept: the judge results are the provenance of every reported figure
+# (about 650 records of a few hundred bytes each, well under a megabyte).

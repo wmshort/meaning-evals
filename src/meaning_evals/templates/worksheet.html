@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>meaning-evals · gold labels, blind</title>
+<style>
+:root {
+  --paper:#f4f5f4; --surface:#fbfbfa; --surface-2:#eef0ef; --line:#d9dcda; --line-soft:#e6e8e6;
+  --ink:#1b2230; --ink-2:#47505f; --ink-3:#6c7580;
+  --accent:#3d5a80; --accent-ink:#33507a; --accent-wash:#e6ecf3;
+  --warn:#a2382f; --good:#2c6d5c; --good-wash:#e2efe9; --focus:#3d5a80;
+  --shadow:0 1px 2px rgba(20,28,42,.05),0 4px 16px rgba(20,28,42,.04); --radius:10px;
+}
+@media (prefers-color-scheme: dark) { :root {
+  --paper:#12161d; --surface:#1a1f28; --surface-2:#222836; --line:#313848; --line-soft:#262c39;
+  --ink:#e7eaf0; --ink-2:#aeb6c4; --ink-3:#7f8896;
+  --accent:#86a4cf; --accent-ink:#a9c1e6; --accent-wash:#212a3a;
+  --warn:#e0857a; --good:#6fbfa6; --good-wash:#1e2c2a; --focus:#86a4cf;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 22px rgba(0,0,0,.28);
+} }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--paper); color:var(--ink); font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; font-size:15px; line-height:1.55; }
+code, .mono { font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; }
+.topbar { position:sticky; top:0; z-index:40; background:var(--surface); border-bottom:1px solid var(--line); }
+.topbar-inner { max-width:1000px; margin:0 auto; padding:12px 24px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.brand { display:flex; flex-direction:column; margin-right:auto; }
+.brand h1 { font-family:"Spectral",Georgia,serif; font-weight:600; font-size:19px; margin:0; }
+.brand .sub { font-size:12px; color:var(--ink-3); }
+.progress-num { font-variant-numeric:tabular-nums; font-size:13px; color:var(--ink-2); }
+.progress-num b { color:var(--ink); }
+.bar { display:inline-block; vertical-align:middle; width:120px; height:7px; border-radius:99px; background:var(--surface-2); overflow:hidden; margin-left:8px; }
+.bar > i { display:block; height:100%; width:0; background:var(--accent); }
+.savechip { font-size:11.5px; padding:4px 10px; border-radius:99px; border:1px solid var(--line); color:var(--ink-3); }
+.savechip[data-state="saved"] { color:var(--good); border-color:var(--good); }
+.savechip[data-state="failed"] { color:var(--warn); border-color:var(--warn); }
+.tbtn { font:inherit; font-size:13px; cursor:pointer; background:var(--surface); color:var(--ink-2); border:1px solid var(--line); border-radius:8px; padding:6px 11px; }
+.tbtn:hover { color:var(--ink); border-color:var(--accent); }
+.tbtn.primary { background:var(--accent-wash); color:var(--accent-ink); font-weight:500; }
+main { max-width:1000px; margin:0 auto; padding:8px 24px 140px; }
+.intro { margin:20px 0 8px; padding:18px 20px; border:1px solid var(--line-soft); border-left:3px solid var(--accent); border-radius:var(--radius); background:var(--surface); box-shadow:var(--shadow); font-size:14px; color:var(--ink-2); max-width:78ch; }
+.intro strong { color:var(--ink); }
+.intro dl { margin:10px 0 0; }
+.intro dt { font-weight:600; color:var(--ink); }
+.intro dd { margin:0 0 6px 0; }
+.card { margin:14px 0; border:1px solid var(--line-soft); border-left:3px solid var(--line); border-radius:var(--radius); background:var(--surface); box-shadow:var(--shadow); overflow:hidden; scroll-margin-top:86px; }
+.card[data-done="1"] { border-left-color:var(--good); }
+.card-top { display:flex; align-items:center; gap:10px; padding:10px 18px; border-bottom:1px solid var(--line-soft); font-size:12px; color:var(--ink-3); }
+.card-top .done { margin-left:auto; color:var(--good); font-weight:500; display:none; }
+.card[data-done="1"] .card-top .done { display:inline; }
+.card-body { padding:16px 18px; display:flex; flex-direction:column; gap:14px; }
+.lbl { color:var(--ink-3); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; display:block; margin-bottom:3px; }
+details.passage { border:1px solid var(--line-soft); border-radius:8px; background:var(--paper); }
+details.passage > summary { cursor:pointer; padding:9px 13px; font-size:12.5px; color:var(--ink-2); }
+.passage .body, .atext { white-space:pre-wrap; font-size:13.5px; line-height:1.6; color:var(--ink-2); }
+.passage .body { padding:0 15px 14px; }
+.atext { border:1px solid var(--line-soft); border-radius:8px; background:var(--paper); padding:11px 14px; color:var(--ink); }
+.ruling { padding:14px; border-radius:8px; background:var(--accent-wash); display:flex; flex-direction:column; gap:12px; }
+.choices { display:flex; gap:8px; flex-wrap:wrap; }
+.choice { font:inherit; font-size:13px; cursor:pointer; padding:7px 13px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); }
+.choice:hover { border-color:var(--accent); }
+.choice[aria-pressed="true"] { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); font-weight:600; }
+.detail[data-off="1"] { opacity:.4; pointer-events:none; }
+.detail { display:flex; flex-direction:column; gap:12px; }
+input.text { width:100%; font:inherit; font-size:13px; padding:8px 11px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); }
+.hint { font-size:12px; color:var(--ink-3); }
+.hint[data-state="missing"] { color:var(--warn); }
+.hint[data-state="found"] { color:var(--good); }
+textarea.export { width:100%; height:120px; font-size:11.5px; padding:9px 11px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); }
+.choice:focus-visible, .tbtn:focus-visible, input.text:focus-visible, details.passage > summary:focus-visible { outline:2px solid var(--focus); outline-offset:2px; }
+@media (max-width:620px) { .topbar-inner, main { padding-left:16px; padding-right:16px; } }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand"><h1>meaning-evals · gold labels, blind</h1><span class="sub">does the answer diverge in meaning from the guidance</span></div>
+    <span class="progress-num"><b id="pdone">0</b> / <span id="ptotal">0</span> labelled<span class="bar"><i id="pbar"></i></span></span>
+    <span class="savechip" id="savechip" data-state="local">not saved yet</span>
+    <button class="tbtn" id="jumpnext" type="button">Next unlabelled</button>
+  </div>
+</div>
+<main>
+  <div class="intro">
+    Each card shows a passage of GOV.UK guidance, a question about it, and an answer. Decide <strong>whether the answer diverges in meaning from the guidance</strong>: whether something it says about what the guidance requires, permits, states or limits differs from what the passage says. Different wording with the same meaning does not diverge. If it diverges, choose <strong>the mechanism</strong>, copy <strong>the span of the answer</strong> where the divergence sits (it must occur in the answer exactly as you paste it), and give <strong>a one-line rationale</strong>. The cards are in a fixed shuffled order and show nothing about how any answer was made.
+    <dl id="legend"></dl>
+    Your labels are kept in this browser as you go. Export them at the end and hand the file back.
+  </div>
+  <div id="cards"></div>
+  <div class="card"><div class="card-body">
+    <span class="lbl">Export</span>
+    <textarea class="export mono" id="exportbox" readonly spellcheck="false" aria-label="Exported labels"></textarea>
+    <div><button class="tbtn primary" id="downloadbtn" type="button">Export JSON</button> <button class="tbtn" id="copybtn" type="button">Copy JSON</button> <span class="hint" id="copyhint"></span></div>
+  </div></div>
+</main>
+<script id="worksheet-data" type="application/json">__WORKSHEET_DATA__</script>
+<script>
+(function () {
+  "use strict";
+  var DATA = JSON.parse(document.getElementById("worksheet-data").textContent);
+  var ITEMS = DATA.items, PASSAGES = DATA.passages, MECHANISMS = DATA.mechanisms;
+  var cards = {}, timers = {};
+  var labels = load();
+
+  function load() {
+    var saved = null;
+    try { saved = JSON.parse(window.localStorage.getItem(DATA.storage_key) || "{}"); } catch (e) { saved = null; }
+    return saved && typeof saved === "object" ? saved : {};
+  }
+  function save() {
+    var ok = true;
+    try { window.localStorage.setItem(DATA.storage_key, JSON.stringify(labels)); } catch (e) { ok = false; }
+    setSave(ok ? "saved" : "failed", ok ? "saved in this browser" : "not saved: export to keep your work");
+  }
+  function setSave(state, text) {
+    var chip = document.getElementById("savechip");
+    chip.setAttribute("data-state", state);
+    chip.textContent = text;
+  }
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text != null) node.textContent = text;
+    return node;
+  }
+  function state(id) {
+    if (!labels[id]) labels[id] = { diverges: null, mechanism: null, quoted_span: "", rationale: "", labelled_at: null };
+    return labels[id];
+  }
+  function spanFound(item, span) {
+    var trimmed = (span || "").trim();
+    return trimmed !== "" && item.answer.indexOf(trimmed) !== -1;
+  }
+  function isDone(item) {
+    var r = labels[item.id];
+    if (!r || r.diverges === null) return false;
+    if (r.diverges === false) return true;
+    return !!r.mechanism && spanFound(item, r.quoted_span) && (r.rationale || "").trim() !== "";
+  }
+  function touch(item) {
+    state(item.id).labelled_at = new Date().toISOString();
+    save(); refresh(item); progress();
+  }
+  function touchLater(item) {
+    state(item.id).labelled_at = new Date().toISOString();
+    setSave("local", "saving");
+    clearTimeout(timers[item.id]);
+    timers[item.id] = setTimeout(function () { save(); }, 400);
+    refresh(item); progress();
+  }
+
+  function choiceButton(text, pressedValue, onClick, title) {
+    var button = el("button", "choice", text);
+    button.type = "button";
+    button.setAttribute("data-v", pressedValue);
+    button.setAttribute("aria-pressed", "false");
+    if (title) button.title = title;
+    button.addEventListener("click", onClick);
+    return button;
+  }
+  function textField(item, field, labelText, id) {
+    var wrap = el("div");
+    var label = el("label", "lbl", labelText);
+    label.setAttribute("for", id);
+    var input = el("input", "text");
+    input.type = "text"; input.id = id;
+    input.value = (labels[item.id] || {})[field] || "";
+    input.addEventListener("input", function () { state(item.id)[field] = input.value; touchLater(item); });
+    wrap.appendChild(label); wrap.appendChild(input);
+    return wrap;
+  }
+
+  function passageBlock(item) {
+    var passage = PASSAGES[item.passage_id];
+    var details = el("details", "passage");
+    details.open = true;
+    details.appendChild(el("summary", null, "Guidance: " + passage.title));
+    details.appendChild(el("div", "body", passage.text));
+    return details;
+  }
+  function verdictRow(item) {
+    var row = el("div", "choices");
+    row.setAttribute("data-role", "verdict");
+    row.appendChild(choiceButton("Diverges", "yes", function () { state(item.id).diverges = true; touch(item); }));
+    row.appendChild(choiceButton("Does not diverge", "no", function () {
+      var r = state(item.id); r.diverges = false; r.mechanism = null; touch(item);
+    }));
+    return row;
+  }
+  function detailBlock(item) {
+    var detail = el("div", "detail");
+    detail.setAttribute("data-role", "detail");
+    detail.appendChild(el("span", "lbl", "Mechanism"));
+    var row = el("div", "choices");
+    row.setAttribute("data-role", "mechanism");
+    MECHANISMS.forEach(function (m) {
+      row.appendChild(choiceButton(m.label, m.id, function () { state(item.id).mechanism = m.id; touch(item); }, m.definition));
+    });
+    detail.appendChild(row);
+    detail.appendChild(textField(item, "quoted_span", "Quoted span, copied from the answer", "span-" + item.id));
+    var hint = el("span", "hint");
+    hint.setAttribute("data-role", "span-hint");
+    detail.appendChild(hint);
+    detail.appendChild(textField(item, "rationale", "Rationale, one line", "why-" + item.id));
+    return detail;
+  }
+  function build(item, index) {
+    var card = el("div", "card");
+    card.id = "card-" + item.id;
+    cards[item.id] = card;
+    var top = el("div", "card-top");
+    top.appendChild(el("span", null, "#" + (index + 1) + " of " + ITEMS.length));
+    top.appendChild(el("span", "mono", item.id));
+    top.appendChild(el("span", "done", "labelled"));
+    card.appendChild(top);
+    var body = el("div", "card-body");
+    body.appendChild(passageBlock(item));
+    var question = el("div"); question.appendChild(el("span", "lbl", "Question")); question.appendChild(el("div", null, item.question));
+    var answer = el("div"); answer.appendChild(el("span", "lbl", "Answer")); answer.appendChild(el("div", "atext", item.answer));
+    body.appendChild(question); body.appendChild(answer);
+    var ruling = el("div", "ruling");
+    ruling.appendChild(el("span", "lbl", "Does the answer diverge in meaning from the guidance?"));
+    ruling.appendChild(verdictRow(item));
+    ruling.appendChild(detailBlock(item));
+    body.appendChild(ruling);
+    card.appendChild(body);
+    return card;
+  }
+
+  function refresh(item) {
+    var card = cards[item.id], r = labels[item.id] || {};
+    var verdict = r.diverges === true ? "yes" : (r.diverges === false ? "no" : "");
+    card.querySelectorAll("[data-role=verdict] .choice").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-v") === verdict)); });
+    card.querySelectorAll("[data-role=mechanism] .choice").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-v") === r.mechanism)); });
+    card.querySelector("[data-role=detail]").setAttribute("data-off", r.diverges === true ? "0" : "1");
+    var hint = card.querySelector("[data-role=span-hint]");
+    var span = (r.quoted_span || "").trim();
+    hint.setAttribute("data-state", span === "" ? "" : (spanFound(item, span) ? "found" : "missing"));
+    hint.textContent = span === "" ? "" : (spanFound(item, span) ? "Found in the answer." : "Not found in the answer exactly as typed.");
+    card.setAttribute("data-done", isDone(item) ? "1" : "0");
+  }
+  function exported() {
+    var out = { format: DATA.format, version: DATA.version, seed: DATA.seed, labels: [] };
+    ITEMS.forEach(function (item) {
+      if (!isDone(item)) return;
+      var r = labels[item.id];
+      out.labels.push({
+        item_id: item.id,
+        diverges: r.diverges,
+        mechanism: r.diverges ? r.mechanism : null,
+        quoted_span: r.diverges ? r.quoted_span.trim() : null,
+        rationale: (r.rationale || "").trim(),
+        labelled_at: r.labelled_at
+      });
+    });
+    return out;
+  }
+  function progress() {
+    var done = ITEMS.filter(isDone).length;
+    document.getElementById("pdone").textContent = String(done);
+    document.getElementById("ptotal").textContent = String(ITEMS.length);
+    document.getElementById("pbar").style.width = (ITEMS.length ? 100 * done / ITEMS.length : 0) + "%";
+    document.getElementById("exportbox").value = JSON.stringify(exported(), null, 2);
+  }
+  function hint(text) { document.getElementById("copyhint").textContent = text; }
+
+  var legend = document.getElementById("legend");
+  MECHANISMS.forEach(function (m) { legend.appendChild(el("dt", null, m.label)); legend.appendChild(el("dd", null, m.definition)); });
+  var container = document.getElementById("cards");
+  ITEMS.forEach(function (item, i) { container.appendChild(build(item, i)); });
+  ITEMS.forEach(refresh);
+  progress();
+
+  document.getElementById("jumpnext").addEventListener("click", function () {
+    var next = ITEMS.filter(function (item) { return !isDone(item); })[0];
+    if (next) cards[next.id].scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  document.getElementById("downloadbtn").addEventListener("click", function () {
+    var blob = new Blob([JSON.stringify(exported(), null, 2)], { type: "application/json" });
+    var url = URL.createObjectURL(blob), link = document.createElement("a");
+    link.href = url; link.download = "meaning-evals-gold-labels.json";
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+    hint("Exported meaning-evals-gold-labels.json.");
+  });
+  document.getElementById("copybtn").addEventListener("click", function () {
+    var text = document.getElementById("exportbox").value;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { hint("Copied."); }, function () { hint("Select the text above and copy it."); });
+    } else { hint("Select the text above and copy it."); }
+  });
+})();
+</script>
+</body>
+</html>

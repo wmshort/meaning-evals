@@ -1,0 +1,13 @@
+# Install once with `uv tool install pre-commit` and `pre-commit install`.
+# gitleaks blocks any commit whose staged changes contain a credential; ruff lints and
+# formats. The ruff revision matches the version pinned in pyproject.toml.
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.9
+    hooks:
+      - id: ruff-check
+      - id: ruff-format

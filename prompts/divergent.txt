@@ -1,0 +1,21 @@
+Below are a passage of GOV.UK guidance, a question about it, and a faithful answer to that question.
+
+Rewrite the faithful answer so that it departs from the guidance in exactly one place, by this mechanism:
+
+$mechanism_label: $mechanism_definition
+
+Change that one place and keep every other sentence word for word. The change must alter what the answer says the guidance requires, permits or states; a change of wording alone is not enough. The rewritten answer must read as fluently and confidently as the original, as though its writer believed it. Do not hedge the change, signal it or draw attention to it.
+
+<passage>
+$passage
+</passage>
+
+<question>
+$question
+</question>
+
+<faithful_answer>
+$faithful_answer
+</faithful_answer>
+
+Return a JSON object with one field, "answer", holding the complete rewritten answer.

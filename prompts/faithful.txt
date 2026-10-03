@@ -1,0 +1,13 @@
+Answer the question below using only the passage of GOV.UK guidance that follows it.
+
+The answer must be faithful to the passage. Every obligation, permission, condition, time limit, number and limit of scope that bears on the question must be stated as the passage states it, and nothing may be added that the passage does not say. Write two to five sentences addressed to the person asking. Do not quote the passage at length, do not mention the passage or GOV.UK, and do not add advice of your own.
+
+<question>
+$question
+</question>
+
+<passage>
+$passage
+</passage>
+
+Return a JSON object with one field, "answer", holding the answer.

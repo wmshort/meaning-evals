@@ -1,0 +1,18 @@
+Data licence
+
+The items in this directory (the questions, the generated answers, the gold labels and the
+judge results) are licensed under the Creative Commons Attribution 4.0 International
+licence (CC BY 4.0): https://creativecommons.org/licenses/by/4.0/
+
+Copyright (c) 2026 William Short.
+
+The source passages are not covered by that licence. Each passage is taken from a GOV.UK
+guidance page and is used under the Open Government Licence v3.0:
+https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+
+Every passage record in passages.jsonl carries its source URL, page title, retrieval date
+and the attribution statement the licence requires:
+
+  Contains public sector information licensed under the Open Government Licence v3.0.
+
+Anyone reusing a passage, or an answer adapted from one, must keep that attribution.
